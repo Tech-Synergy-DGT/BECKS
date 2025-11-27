@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>BECKS beta v0.4 — BDI & BAI</title>
+<title>BECKS — BDI & BAI</title>
 <style>
   :root{--bg:#f6f8fb;--card:#fff;--accent:#0b6fa6;--muted:#6b7280}
   body{font-family:system-ui,Segoe UI,Roboto,Arial;font-size: 1.5rem; background:var(--bg);margin:0;padding:20px;color:#0f172a}
@@ -15,6 +15,9 @@
   .tab.active{background:var(--accent);color:#fff}
   .tab.locked{opacity:.45;cursor:not-allowed}
   .panel{border:1px solid #e6edf3;padding:14px;border-radius:8px;background:#fff}
+  .qArea{font-size:3rem}
+  .option-row{display:grid;grid-template-columns:24px 1fr;gap:10px;padding-left:24px}
+  .option-row input[type="radio"]{align-self:start;position:relative;top:1.5rem;transform: scale(1.6);accent-color: var(--accent)}
   .qtitle{font-weight:700;margin-bottom:8px}
   .options div{margin:8px 0}
   .nav{display:flex;gap:8px;margin:1rem 2rem;align-items:center}
@@ -27,10 +30,13 @@
   footer{margin-top:12px;font-size:13px;color:var(--muted)}
   table{width:100%;border-collapse:collapse;margin-top:6px}
   .instruction{font-size: 1rem; margin:1rem 1rem 4rem 1rem;}
-  #preloader {position:fixed;inset:0;background:#ffffff;display:flex;align-items:center;justify-content:center;z-index:9999;}
+  #preloader{position:fixed;inset:0;background:#ffffff;display:flex;align-items:center;justify-content:center;z-index:9999;}
   .spinner{width:60px;height:60px;border:6px solid#ddd;border-top-color:#3498db;border-radius:50%;animation:spin 0.8 slinear infinite;}
-  @keyframes spin {to { transform: rotate(360deg); }
-}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  /* === Added table-style layout === */
+  .option-row{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:flex-start;margin:6px 0}
+  .option-row input[type="radio"]{margin-top:4px}
 </style>
 <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 </head>
@@ -39,36 +45,33 @@
 </div>
 <body>
 <div class="wrap">
-  <h2 style="margin:0 0 8px 0;font-size:1rem">BDI/BAI</h2> 
-  <div style="display:flex;align-items:center; margin-bottom: 1rem; color: red;">
+  <h2 style="margin:0 0 8px 0;font-size:1rem">BDI/BAI</h2>
+  <div style="display:flex;align-items:center;margin-bottom:1rem;color:red;">
     <button id="chooseTemplateBtn" class="btn ghost">Choose template PDF</button>
-    <span id="templateName" class="small" style="color: green; min-width:200px;display:inline-block"></span>
+    <span id="templateName" class="small" style="color:green;min-width:200px;display:inline-block"></span>
   </div>
-  <div style="transition: max-height 0.3s ease;" id="panel">
-  <!-- Header fields -->
-  <div class="header-row">
-    <input id="nameField" type="text" placeholder="Name" style="flex:2" />
-    <input id="ageField" type="number" placeholder="Age" style="flex:1" />
-    <select id="sexField" style="flex:1">
-      <option value="">Sex</option><option value="M">M</option><option value="F">F</option>
-    </select>
-    <input id="maritalField" type="text" placeholder="Marital Status" style="flex:1.2" />
-  </div>
-  <div class="header-row" style="margin-top:6px">
-    <input id="occupationField" type="text" placeholder="Occupation" style="flex:1.5" />
-    <input id="educationField" type="text" placeholder="Education" style="flex:1.5" />
-  </div>
+  <div style="transition:max-height 0.3s ease;" id="panel">
+    <div class="header-row">
+      <input id="nameField" type="text" placeholder="Name" style="flex:2"/>
+      <input id="ageField" type="number" placeholder="Age" style="flex:1"/>
+      <select id="sexField" style="flex:1">
+        <option value="">Sex</option><option value="M">M</option><option value="F">F</option>
+      </select>
+      <input id="maritalField" type="text" placeholder="Marital Status" style="flex:1.2"/>
+    </div>
+    <div class="header-row" style="margin-top:6px">
+      <input id="occupationField" type="text" placeholder="Occupation" style="flex:1.5"/>
+      <input id="educationField" type="text" placeholder="Education" style="flex:1.5"/>
+    </div>
   </div>
 <div>
 
 <div class="wrap">
-  <!-- Tabs -->
   <div class="tabs">
     <div id="tabBDI" class="tab active">BDI</div>
     <div id="tabBAI" class="tab locked">BAI</div>
   </div>
 
-  <!-- Progress -->
   <div style="display:flex;gap:12px;align-items:center">
     <div style="flex:1">
       <div class="small">BDI progress</div>
@@ -81,10 +84,9 @@
     <button class="btn" id="toggleBtn">^ Hide</button>
   </div>
 
-  <!-- Panels -->
   <div id="panelBDI" class="panel" style="margin-top:12px">
-    <div class="instruction"><b>Instructions:</b> Click one statement that best describes the way you have been feeling during the past two weeks, including today. If several items apply equally well, circle the highest number.</div>
-    <div id="qAreaBDI"></div>
+    <div class="instruction"><b>Instructions:</b> Click one statement that best describes the way you have been feeling during the past two weeks, including today.</div>
+    <div class="qArea" id="qAreaBDI"></div>
     <div class="nav">
       <button id="prevBDI" class="btn ghost hidden">Previous</button>
       <button id="nextBDI" class="btn">Next</button>
@@ -94,8 +96,8 @@
   </div>
 
   <div id="panelBAI" class="panel" style="margin-top:12px;display:none">
-    <div class="instruction">Instruction: Indicate how much you have been bothered by the following symptoms for the past week, including today. </div>
-    <div id="qAreaBAI"></div>
+    <div class="instruction">Instruction: Indicate how much you have been bothered by the following symptoms for the past week.</div>
+    <div class="qArea" id="qAreaBAI"></div>
     <div class="nav">
       <button id="prevBAI" class="btn ghost hidden">Previous</button>
       <button id="nextBAI" class="btn">Next</button>
@@ -113,8 +115,8 @@
 
 <script>
 /*========toggle=======*/
-  const btn = document.getElementById('toggleBtn');
-  const panel = document.getElementById('panel');
+  const btn=document.getElementById('toggleBtn');const panel=document.getElementById('panel');
+  btn.onclick=function(){if(panel.style.display==="none"){panel.style.display="block";btn.textContent="^ Hide";}else{panel.style.display="none";btn.textContent="v Show";}};
 
   btn.onclick = function () {
     if (panel.style.display === "none") {
@@ -127,8 +129,7 @@
   };
 	
 /* ======= configuration ======= */
-let templateArrayBuffer = null;
-let templateFilename = '';
+let templateArrayBuffer=null;let templateFilename='';
 
 /* ======= Questions ======= */
 const bdi1 = [
@@ -318,11 +319,13 @@ function render(){
       switchTab('BAI');
       qAreaBAI.innerHTML = renderBAIQuestion(idx);
       document.getElementById('prevBAI').classList.toggle('hidden', idx===0);
+      document.getElementById('nextBAI').classList.remove('hidden');   // <-- show Next
       wireBAI(idx);
     } else {
       switchTab('BAI');
       qAreaBAI.innerHTML = '<div class="qtitle">BAI complete — ready to generate report.</div><div class="small">Click Generate Report when ready.</div>';
       document.getElementById('prevBAI').classList.remove('hidden');
+      document.getElementById('nextBAI').classList.add('hidden');      // <-- hide Next
     }
   }
 
@@ -331,19 +334,30 @@ function render(){
   updateGenerateState();
 }
 
-function renderQuestion(q, section){
-  const stored = (section==='page1') ? answers.page1[q.id] : answers.page2[q.id];
+function renderQuestion(q,section){
+  const stored=(section==='page1')?answers.page1[q.id]:answers.page2[q.id];
   return `<div class="qtitle">${q.id}. ${q.text}</div>
-    <div class="options">
-      ${q.opts.map((o,i)=>`<div><label><input type="radio" name="opt" value="${i}" ${stored && stored.choiceIdx===i ? 'checked' : ''}> ${o}</label></div>`).join('')}
-    </div>`;
+  <div class="options">
+    ${q.opts.map((o,i)=>`
+      <div class="option-row">
+        <input type="radio" name="opt" id="q${q.id}o${i}" value="${i}" ${stored&&stored.choiceIdx===i?'checked':''}>
+        <label for="q${q.id}o${i}">${o}</label>
+      </div>
+    `).join('')}
+  </div>`;
 }
+
 function renderBAIQuestion(idx){
-  const stored = answers.page3[idx];
+  const stored=answers.page3[idx];
   return `<div class="qtitle">${idx+1}. ${bai[idx]}</div>
-    <div class="options">
-      ${baiOpts.map((o,i)=>`<div><label><input type="radio" name="baiopt" value="${i}" ${stored===i?'checked':''}> ${i} - ${o}</label></div>`).join('')}
-    </div>`;
+  <div class="options">
+    ${baiOpts.map((o,i)=>`
+      <div class="option-row">
+        <input type="radio" name="baiopt" id="bai${idx}o${i}" value="${i}" ${stored===i?'checked':''}>
+        <label for="bai${idx}o${i}">${i} - ${o}</label>
+      </div>
+    `).join('')}
+  </div>`;
 }
 
 /* ======= wiring ======= */
